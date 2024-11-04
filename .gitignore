@@ -1,0 +1,8 @@
+./lib/*
+*.o
+*.a
+*.d
+
+.Makefile.swpx
+MPU_6050_tests
+settings.json
