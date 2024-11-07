@@ -1,3 +1,10 @@
+/** @file mpu6050.h
+*
+* @brief A driver for the mpu6050 accelerometer and gyroscope.
+*
+* @par
+*
+*/
 
 #ifndef MPU6050_H
 #define MPU6050_H
@@ -34,19 +41,21 @@ typedef enum range_e
     EXTRALARGESCALE = 3,
 } range_t;
 
-typedef struct MPU6050_s
+typedef struct mpu6050_s
 {
     uint8_t address;
     range_t accel_range;
     range_t gyro_range;
-    void (*I2C_Send)(uint8_t, uint8_t*, uint8_t);
-    void (*I2C_Receive)(uint8_t, uint8_t*, uint8_t);
-} MPU6050_t;
+    void (*i2c_send)(uint8_t, uint8_t *, uint8_t);
+    void (*i2c_receive)(uint8_t, uint8_t *, uint8_t);
+} mpu6050_t;
 
-void MPU6050_init(MPU6050_t *pMPU6050, uint8_t AD0pin);
-void MPU6050_getAcceleration(MPU6050_t *pMPU6050, int16_t *px, int16_t *py, int16_t *pz);
-void MPU6050_getRotation(MPU6050_t *pMPU6050, int16_t *px, int16_t *py, int16_t *pz);
-void mpu6050_set_accel_range(MPU6050_t * pMPU6050, range_t range);
-void mpu6050_set_gyro_range(MPU6050_t * pMPU6050, range_t range);
+void mpu6050_init(mpu6050_t * p_mpu6050, uint8_t ad0_pin);
+void mpu6050_getAcceleration(const mpu6050_t * p_mpu6050, int16_t * p_x, int16_t * p_y, int16_t * p_z);
+void mpu6050_getRotation(const mpu6050_t * p_mpu6050, int16_t * p_x, int16_t * p_y, int16_t * p_z);
+void mpu6050_set_accel_range(mpu6050_t * p_mpu6050, range_t range);
+void mpu6050_set_gyro_range(mpu6050_t * p_mpu6050, range_t range);
 
 #endif // MPU6050_H
+
+/*** end of file ***/
