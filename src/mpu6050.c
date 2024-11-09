@@ -8,12 +8,12 @@
 
 #include "mpu6050.h"
 
-#define FS_SEL  3
-#define AFS_SEL 3
 
-void mpu6050_init(mpu6050_t * p_mpu6050, uint8_t ad0_pin)
+void mpu6050_init(mpu6050_t * p_mpu6050, bool ad0_pin)
 {
     p_mpu6050->address = ad0_pin ? BASE_ADDRESS + 1 : BASE_ADDRESS;
+
+    mpu6050_enable_sleep(p_mpu6050, false);
 
     if (p_mpu6050->accel_range)
     {
@@ -56,22 +56,53 @@ void mpu6050_getRotation(const mpu6050_t * p_mpu6050, int16_t * p_x, int16_t * p
 
 void mpu6050_set_accel_range(mpu6050_t * p_mpu6050, range_t range)
 {
-    uint8_t sendBuffer[2];
-    sendBuffer[0] = ACCEL_CONFIG;
-    sendBuffer[1] = range << AFS_SEL;
-    p_mpu6050->i2c_send(p_mpu6050->address, sendBuffer, sizeof(sendBuffer));
+    uint8_t buffer[2];
+    buffer[0] = ACCEL_CONFIG;
+    buffer[1] = 0;
+
+    p_mpu6050->i2c_send(p_mpu6050->address, buffer, sizeof(buffer[0]));
+    p_mpu6050->i2c_receive(p_mpu6050->address, &buffer[1], sizeof(buffer[1]));
+
+    buffer[1] &= ~(0x3 << ACCEL_CONFIG_AFS_SEL_BIT);
+    buffer[1] |= range << ACCEL_CONFIG_AFS_SEL_BIT;
+    p_mpu6050->i2c_send(p_mpu6050->address, buffer, sizeof(buffer));
 
     p_mpu6050->accel_range = range;
 }
 
 void mpu6050_set_gyro_range(mpu6050_t * p_mpu6050, range_t range)
 {
-    uint8_t sendBuffer[2];
-    sendBuffer[0] = GYRO_CONFIG;
-    sendBuffer[1] = range << FS_SEL;
-    p_mpu6050->i2c_send(p_mpu6050->address, sendBuffer, sizeof(sendBuffer));
+    uint8_t buffer[2];
+    buffer[0] = GYRO_CONFIG;
+    buffer[1] = 0;
+
+    p_mpu6050->i2c_send(p_mpu6050->address, buffer, sizeof(buffer[0]));
+    p_mpu6050->i2c_receive(p_mpu6050->address, &buffer[1], sizeof(buffer[1]));
+
+    buffer[1] &= ~(0x3 << GYRO_CONFIG_FS_SEL_BIT);
+    buffer[1] |= range << GYRO_CONFIG_FS_SEL_BIT;
+    p_mpu6050->i2c_send(p_mpu6050->address, buffer, sizeof(buffer));
 
     p_mpu6050->gyro_range = range;
+}
+
+void mpu6050_enable_sleep(const mpu6050_t * p_mpu6050, bool enable)
+{
+    uint8_t buffer[2];
+
+    buffer[0] = PWR_MGMT_1;
+    buffer[1] = 0;
+    p_mpu6050->i2c_send(p_mpu6050->address, buffer, sizeof(buffer[0]));
+    p_mpu6050->i2c_receive(p_mpu6050->address, &buffer[1], sizeof(buffer[1]));
+    if (enable)
+    {
+        buffer[1] |= 1 << PWR_MGMT_SLEEP_BIT;
+    }
+    else
+    {
+        buffer[1] &= ~(1 << PWR_MGMT_SLEEP_BIT);
+    }
+    p_mpu6050->i2c_send(p_mpu6050->address, buffer, sizeof(buffer));
 }
 
 bool mpu6050_test_connection(const mpu6050_t * p_mpu6050)
@@ -82,7 +113,7 @@ bool mpu6050_test_connection(const mpu6050_t * p_mpu6050)
     p_mpu6050->i2c_send(p_mpu6050->address, &sendBuffer, sizeof(sendBuffer));
     p_mpu6050->i2c_receive(p_mpu6050->address, &receiveBuffer, sizeof(receiveBuffer));
 
-    return p_mpu6050->address == receiveBuffer;
+    return BASE_ADDRESS == receiveBuffer;
 }
 
 /*** end of file ***/

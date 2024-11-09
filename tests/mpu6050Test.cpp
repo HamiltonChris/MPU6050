@@ -29,12 +29,15 @@ TEST_GROUP(MPU6050)
         memset(registers, 0, sizeof(registers));
         currentRegister = 0;
 
+        registers[PWR_MGMT_1] |= 1 << PWR_MGMT_SLEEP_BIT;
         registers[WHO_AM_I] = BASE_ADDRESS;
 
         p_mpu6050 = (mpu6050_t*)malloc(sizeof(mpu6050_t));
+        p_mpu6050->accel_range = SHORTSCALE;
+        p_mpu6050->gyro_range = SHORTSCALE;
         p_mpu6050->i2c_send = &dummy_send;
         p_mpu6050->i2c_receive = &dummy_receive;
-        mpu6050_init(p_mpu6050, 0);
+        mpu6050_init(p_mpu6050, false);
     }
 
     void teardown()
@@ -47,7 +50,7 @@ TEST_GROUP(MPU6050)
 TEST(MPU6050, init)
 {
     mpu6050_t mpu6050;
-    uint8_t AD0pin = 0;
+    bool AD0pin = false;
 
     mpu6050.address = 0xFF;
     mpu6050.accel_range = EXTRALARGESCALE;
@@ -60,12 +63,13 @@ TEST(MPU6050, init)
     BYTES_EQUAL(BASE_ADDRESS, mpu6050.address);
     BYTES_EQUAL(EXTRALARGESCALE << 3, registers[ACCEL_CONFIG]);
     BYTES_EQUAL(LARGESCALE << 3, registers[GYRO_CONFIG]);
+    BYTES_EQUAL(0x00, registers[PWR_MGMT_1]);
 }
 
 TEST(MPU6050, AD0High)
 {
     mpu6050_t mpu6050;
-    uint8_t ad0_pin = 1;
+    bool ad0_pin = true;
 
     mpu6050.address = 0;
     mpu6050.i2c_send = &dummy_send;
@@ -74,6 +78,7 @@ TEST(MPU6050, AD0High)
     mpu6050_init(&mpu6050, ad0_pin);
 
     BYTES_EQUAL(BASE_ADDRESS + 1, mpu6050.address);
+    CHECK_TRUE(mpu6050_test_connection(&mpu6050));
 }
 
 TEST(MPU6050, ReadAccelerometer)
@@ -147,21 +152,72 @@ TEST(MPU6050, AccelerometerScale)
 {
     mpu6050_set_accel_range(p_mpu6050, LARGESCALE);
 
-    BYTES_EQUAL(LARGESCALE << 3, registers[ACCEL_CONFIG]);
+    BYTES_EQUAL(LARGESCALE << ACCEL_CONFIG_AFS_SEL_BIT, registers[ACCEL_CONFIG]);
     BYTES_EQUAL(LARGESCALE, p_mpu6050->accel_range);
+}
+
+TEST(MPU6050, AccelerometerScaleSet)
+{
+    registers[ACCEL_CONFIG] = 0xE3;
+    mpu6050_set_accel_range(p_mpu6050, LARGESCALE);
+    BYTES_EQUAL(0xF3, registers[ACCEL_CONFIG]);
+}
+
+TEST(MPU6050, AccelerometerScaleClear)
+{
+    registers[ACCEL_CONFIG] = 0xF8;
+    mpu6050_set_accel_range(p_mpu6050, SHORTSCALE);
+    BYTES_EQUAL(0xE0, registers[ACCEL_CONFIG]);
 }
 
 TEST(MPU6050, GyroscopeScale)
 {
     mpu6050_set_gyro_range(p_mpu6050, MEDIUMSCALE);
 
-    BYTES_EQUAL(MEDIUMSCALE << 3, registers[GYRO_CONFIG]);
+    BYTES_EQUAL(MEDIUMSCALE << GYRO_CONFIG_FS_SEL_BIT, registers[GYRO_CONFIG]);
     BYTES_EQUAL(MEDIUMSCALE, p_mpu6050->gyro_range);
+}
+
+TEST(MPU6050, GyroscopeScaleSet)
+{
+    registers[GYRO_CONFIG] = 0xE3;
+    mpu6050_set_gyro_range(p_mpu6050, EXTRALARGESCALE);
+    BYTES_EQUAL(0xFB, registers[GYRO_CONFIG]);
+}
+
+TEST(MPU6050, GyroscopeScaleClear)
+{
+    registers[GYRO_CONFIG] = 0xFB;
+    mpu6050_set_gyro_range(p_mpu6050, SHORTSCALE);
+    BYTES_EQUAL(0xE3, registers[GYRO_CONFIG]);
 }
 
 TEST(MPU6050, TestConnection)
 {
     CHECK_TRUE(mpu6050_test_connection(p_mpu6050));
+}
+
+TEST(MPU6050, SleepMode)
+{
+    mpu6050_enable_sleep(p_mpu6050, true);
+
+    BYTES_EQUAL(1 << PWR_MGMT_SLEEP_BIT, registers[PWR_MGMT_1]);
+}
+
+TEST(MPU6050, SleepRegisterClear)
+{
+    registers[PWR_MGMT_1] = 0xFF;
+    mpu6050_enable_sleep(p_mpu6050, false);
+
+    BYTES_EQUAL(0xBF, registers[PWR_MGMT_1]);
+}
+
+TEST(MPU6050, SleepRegisterSet)
+{
+    registers[PWR_MGMT_1] = 0xBF;
+    mpu6050_enable_sleep(p_mpu6050, true);
+
+    BYTES_EQUAL(0xFF, registers[PWR_MGMT_1]);
 }
 
 static void dummy_send(uint8_t address, uint8_t * buffer, uint8_t size)
