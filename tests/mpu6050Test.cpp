@@ -29,6 +29,8 @@ TEST_GROUP(MPU6050)
         memset(registers, 0, sizeof(registers));
         currentRegister = 0;
 
+        registers[WHO_AM_I] = BASE_ADDRESS;
+
         p_mpu6050 = (mpu6050_t*)malloc(sizeof(mpu6050_t));
         p_mpu6050->i2c_send = &dummy_send;
         p_mpu6050->i2c_receive = &dummy_receive;
@@ -155,6 +157,11 @@ TEST(MPU6050, GyroscopeScale)
 
     BYTES_EQUAL(MEDIUMSCALE << 3, registers[GYRO_CONFIG]);
     BYTES_EQUAL(MEDIUMSCALE, p_mpu6050->gyro_range);
+}
+
+TEST(MPU6050, TestConnection)
+{
+    CHECK_TRUE(mpu6050_test_connection(p_mpu6050));
 }
 
 static void dummy_send(uint8_t address, uint8_t * buffer, uint8_t size)

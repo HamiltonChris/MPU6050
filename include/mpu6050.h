@@ -10,6 +10,7 @@
 #define MPU6050_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #define BASE_ADDRESS 0x68
 
@@ -55,6 +56,7 @@ void mpu6050_getAcceleration(const mpu6050_t * p_mpu6050, int16_t * p_x, int16_t
 void mpu6050_getRotation(const mpu6050_t * p_mpu6050, int16_t * p_x, int16_t * p_y, int16_t * p_z);
 void mpu6050_set_accel_range(mpu6050_t * p_mpu6050, range_t range);
 void mpu6050_set_gyro_range(mpu6050_t * p_mpu6050, range_t range);
+bool mpu6050_test_connection(const mpu6050_t * p_mpu6050);
 
 #endif // MPU6050_H
 

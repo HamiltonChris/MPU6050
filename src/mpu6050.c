@@ -74,4 +74,15 @@ void mpu6050_set_gyro_range(mpu6050_t * p_mpu6050, range_t range)
     p_mpu6050->gyro_range = range;
 }
 
+bool mpu6050_test_connection(const mpu6050_t * p_mpu6050)
+{
+    uint8_t sendBuffer;
+    uint8_t receiveBuffer;
+    sendBuffer = WHO_AM_I;
+    p_mpu6050->i2c_send(p_mpu6050->address, &sendBuffer, sizeof(sendBuffer));
+    p_mpu6050->i2c_receive(p_mpu6050->address, &receiveBuffer, sizeof(receiveBuffer));
+
+    return p_mpu6050->address == receiveBuffer;
+}
+
 /*** end of file ***/
