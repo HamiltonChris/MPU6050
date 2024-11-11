@@ -40,6 +40,7 @@
 #define GYRO_CONFIG_FS_SEL_BIT      3
 #define ACCEL_CONFIG_AFS_SEL_BIT    3
 
+#define PWR_MGMT_TEMP_DIS_BIT       3
 #define PWR_MGMT_SLEEP_BIT          6
 
 typedef enum range_e
@@ -65,6 +66,7 @@ void mpu6050_getRotation(const mpu6050_t * p_mpu6050, int16_t * p_x, int16_t * p
 void mpu6050_set_accel_range(mpu6050_t * p_mpu6050, range_t range);
 void mpu6050_set_gyro_range(mpu6050_t * p_mpu6050, range_t range);
 void mpu6050_enable_sleep(const mpu6050_t * p_mpu6050, bool enable);
+void mpu6050_disable_temp_sensor(const mpu6050_t * p_mpu6050, bool enable);
 bool mpu6050_test_connection(const mpu6050_t * p_mpu6050);
 
 #endif // MPU6050_H

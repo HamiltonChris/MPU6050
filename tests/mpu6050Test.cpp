@@ -220,6 +220,22 @@ TEST(MPU6050, SleepRegisterSet)
     BYTES_EQUAL(0xFF, registers[PWR_MGMT_1]);
 }
 
+TEST(MPU6050, DisableTemp)
+{
+    registers[PWR_MGMT_1] = 0xF3;
+    mpu6050_disable_temp_sensor(p_mpu6050, true);
+
+    BYTES_EQUAL(0xFB, registers[PWR_MGMT_1]);
+}
+
+TEST(MPU6050, EnableTemp)
+{
+    registers[PWR_MGMT_1] = 0xFF;
+    mpu6050_disable_temp_sensor(p_mpu6050, false);
+
+    BYTES_EQUAL(0xF7, registers[PWR_MGMT_1]);
+}
+
 static void dummy_send(uint8_t address, uint8_t * buffer, uint8_t size)
 {
     if (size && buffer)
