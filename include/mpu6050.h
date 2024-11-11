@@ -45,6 +45,12 @@
 #define PWR_MGMT_SLEEP_BIT          6
 #define PWR_MGMT_DEVICE_RESET_BIT   7
 
+#define PWR_MGMT2_STBY_ZG_BIT       0
+#define PWR_MGMT2_STBY_YG_BIT       1
+#define PWR_MGMT2_STBY_XG_BIT       2
+#define PWR_MGMT2_STBY_ZA_BIT       3
+#define PWR_MGMT2_STBY_YA_BIT       4
+#define PWR_MGMT2_STBY_XA_BIT       5
 #define PWR_MGMT2_LP_WAKE_CTRL_BIT  6
 
 typedef enum range_e
@@ -64,6 +70,16 @@ typedef enum wakeup_freq_e
     DISABLE_CYCLE   = 4,
 } wakeup_freq_t;
 
+typedef enum sensor_axis_e
+{
+    ZGYRO           = PWR_MGMT2_STBY_ZG_BIT,
+    YGYRO           = PWR_MGMT2_STBY_YG_BIT,
+    XGYRO           = PWR_MGMT2_STBY_XG_BIT,
+    ZACCEL          = PWR_MGMT2_STBY_ZA_BIT,
+    YACCEL          = PWR_MGMT2_STBY_YA_BIT,
+    XACCEL          = PWR_MGMT2_STBY_XA_BIT,
+} sensor_axis_t;
+
 typedef struct mpu6050_s
 {
     uint8_t address;
@@ -81,6 +97,9 @@ void mpu6050_set_gyro_range(mpu6050_t * p_mpu6050, range_t range);
 void mpu6050_enable_sleep(const mpu6050_t * p_mpu6050, bool enable);
 void mpu6050_enable_cycle_mode(const mpu6050_t * p_mpu6050, wakeup_freq_t freq);
 void mpu6050_disable_temp_sensor(const mpu6050_t * p_mpu6050, bool enable);
+void mpu6050_disable_gyroscope(const mpu6050_t * p_mpu6050, bool disable);
+void mpu6050_disable_accelerometer(const mpu6050_t * p_mpu6050, bool disable);
+void mpu6050_disable_sensor(const mpu6050_t * p_mpu6050, sensor_axis_t sensor, bool disable);
 bool mpu6050_test_connection(const mpu6050_t * p_mpu6050);
 void mpu6050_reset_device(const mpu6050_t * p_mpu6050);
 

@@ -236,6 +236,57 @@ TEST(MPU6050, EnableTemp)
     BYTES_EQUAL(0xF7, registers[PWR_MGMT_1]);
 }
 
+TEST(MPU6050, DisableAccelerometer)
+{
+    mpu6050_disable_accelerometer(p_mpu6050, true);
+
+    BYTES_EQUAL(0x7 << PWR_MGMT2_STBY_ZA_BIT, registers[PWR_MGMT_2]);
+}
+
+TEST(MPU6050, EnableAccelerometer)
+{
+    registers[PWR_MGMT_2] = 0x7 << PWR_MGMT2_STBY_ZG_BIT | 0x7 << PWR_MGMT2_STBY_ZA_BIT;
+    mpu6050_disable_accelerometer(p_mpu6050, false);
+
+    BYTES_EQUAL(0x7 << PWR_MGMT2_STBY_ZG_BIT, registers[PWR_MGMT_2]);
+}
+
+TEST(MPU6050, DisableGyroscope)
+{
+    mpu6050_disable_gyroscope(p_mpu6050, true);
+
+    BYTES_EQUAL(0x7 << PWR_MGMT2_STBY_ZG_BIT, registers[PWR_MGMT_2]);
+}
+
+TEST(MPU6050, EnableGyroscope)
+{
+    registers[PWR_MGMT_2] = 0x7 << PWR_MGMT2_STBY_ZG_BIT | 0x7 << PWR_MGMT2_STBY_ZA_BIT;
+    mpu6050_disable_gyroscope(p_mpu6050, false);
+
+    BYTES_EQUAL(0x7 << PWR_MGMT2_STBY_ZA_BIT, registers[PWR_MGMT_2]);
+}
+
+TEST(MPU6050, DisableGyroZ)
+{
+    registers[PWR_MGMT_2] = 0x3E;
+    mpu6050_disable_sensor(p_mpu6050, ZGYRO, true);
+    BYTES_EQUAL(0x3F, registers[PWR_MGMT_2]);
+}
+
+TEST(MPU6050, EnableAccelY)
+{
+    registers[PWR_MGMT_2] = 0x3F;
+    mpu6050_disable_sensor(p_mpu6050, YACCEL, false);
+    BYTES_EQUAL(0x2F, registers[PWR_MGMT_2]);
+}
+
+TEST(MPU6050, DisableAccelX)
+{
+    registers[PWR_MGMT_2] = 0x0F;
+    mpu6050_disable_sensor(p_mpu6050, XACCEL, true);
+    BYTES_EQUAL(0x2F, registers[PWR_MGMT_2]);
+}
+
 TEST(MPU6050, ResetDevice)
 {
     mpu6050_reset_device(p_mpu6050);
