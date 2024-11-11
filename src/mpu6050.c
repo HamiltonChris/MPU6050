@@ -63,7 +63,7 @@ void mpu6050_set_accel_range(mpu6050_t * p_mpu6050, range_t range)
 {   
     set_bits(p_mpu6050,
              ACCEL_CONFIG,
-             (uint8_t) 0x3 << ACCEL_CONFIG_AFS_SEL_BIT,
+             0x3 << ACCEL_CONFIG_AFS_SEL_BIT,
              (uint8_t) range << ACCEL_CONFIG_AFS_SEL_BIT);
 
     p_mpu6050->accel_range = range;
@@ -73,7 +73,7 @@ void mpu6050_set_gyro_range(mpu6050_t * p_mpu6050, range_t range)
 {
     set_bits(p_mpu6050,
              GYRO_CONFIG,
-             (uint8_t) 0x3 << GYRO_CONFIG_FS_SEL_BIT,
+             0x3 << GYRO_CONFIG_FS_SEL_BIT,
              (uint8_t) range << GYRO_CONFIG_FS_SEL_BIT);
     p_mpu6050->gyro_range = range;
 }
@@ -83,6 +83,27 @@ void mpu6050_enable_sleep(const mpu6050_t * p_mpu6050, bool enable)
     uint8_t bits = enable ? 1 << PWR_MGMT_SLEEP_BIT : 0;
 
     set_bits(p_mpu6050, PWR_MGMT_1, 1 << PWR_MGMT_SLEEP_BIT, bits);
+}
+
+void mpu6050_enable_cycle_mode(const mpu6050_t * p_mpu6050, wakeup_freq_t freq)
+{
+    if (DISABLE_CYCLE == freq)
+    {
+        set_bits(p_mpu6050,
+                PWR_MGMT_1,
+                1 << PWR_MGMT_CYCLE_BIT,
+                0 << PWR_MGMT_CYCLE_BIT);}
+    else
+    {
+        set_bits(p_mpu6050,
+                PWR_MGMT_2,
+                0x3 << PWR_MGMT2_LP_WAKE_CTRL_BIT,
+                (uint8_t) freq << PWR_MGMT2_LP_WAKE_CTRL_BIT);
+        set_bits(p_mpu6050,
+                PWR_MGMT_1,
+                1 << PWR_MGMT_CYCLE_BIT,
+                1 << PWR_MGMT_CYCLE_BIT);
+    }
 }
 
 void mpu6050_disable_temp_sensor(const mpu6050_t * p_mpu6050, bool disable)
@@ -101,6 +122,11 @@ bool mpu6050_test_connection(const mpu6050_t * p_mpu6050)
     p_mpu6050->i2c_receive(p_mpu6050->address, &receiveBuffer, sizeof(receiveBuffer));
 
     return BASE_ADDRESS == receiveBuffer;
+}
+
+void mpu6050_reset_device(const mpu6050_t * p_mpu6050)
+{
+    set_bits(p_mpu6050, PWR_MGMT_1, 1 << PWR_MGMT_DEVICE_RESET_BIT, 1 << PWR_MGMT_DEVICE_RESET_BIT);
 }
 
 static void set_bits(const mpu6050_t * p_mpu6050,

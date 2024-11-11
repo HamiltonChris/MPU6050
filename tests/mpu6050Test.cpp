@@ -236,6 +236,40 @@ TEST(MPU6050, EnableTemp)
     BYTES_EQUAL(0xF7, registers[PWR_MGMT_1]);
 }
 
+TEST(MPU6050, ResetDevice)
+{
+    mpu6050_reset_device(p_mpu6050);
+
+    BYTES_EQUAL(0x80, registers[PWR_MGMT_1]);
+}
+
+TEST(MPU6050, CycleMode)
+{
+    mpu6050_enable_cycle_mode(p_mpu6050, C40HZ);
+
+    BYTES_EQUAL(1 << PWR_MGMT_CYCLE_BIT, registers[PWR_MGMT_1]);
+    BYTES_EQUAL(3 << PWR_MGMT2_LP_WAKE_CTRL_BIT, registers[PWR_MGMT_2]);
+}
+
+TEST(MPU6050, CycleMode1_25HZ)
+{
+    registers[PWR_MGMT_2] = 3 << PWR_MGMT2_LP_WAKE_CTRL_BIT;
+    mpu6050_enable_cycle_mode(p_mpu6050, C1_25HZ);
+
+    BYTES_EQUAL(1 << PWR_MGMT_CYCLE_BIT, registers[PWR_MGMT_1]);
+    BYTES_EQUAL(0 << PWR_MGMT2_LP_WAKE_CTRL_BIT, registers[PWR_MGMT_2]);
+}
+
+TEST(MPU6050, DisableCycleMode)
+{
+    registers[PWR_MGMT_1] = 1 << PWR_MGMT_CYCLE_BIT;
+    registers[PWR_MGMT_2] = 3 << PWR_MGMT2_LP_WAKE_CTRL_BIT;
+    mpu6050_enable_cycle_mode(p_mpu6050, DISABLE_CYCLE);
+
+    BYTES_EQUAL(0, registers[PWR_MGMT_1]);
+    BYTES_EQUAL(3 << PWR_MGMT2_LP_WAKE_CTRL_BIT, registers[PWR_MGMT_2]);
+}
+
 static void dummy_send(uint8_t address, uint8_t * buffer, uint8_t size)
 {
     if (size && buffer)
